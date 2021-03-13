@@ -4,13 +4,15 @@ Python provides built-in sort/sorted functions that use timsort internally.
 You cannot use these built-in functions anywhere in this file.
 
 Every function in this file takes a comparator `cmp` as input
-which controls how the elements of the list should be compared against each other:
+which controls how the elements of the list
+should be compared against each other:
 If cmp(a, b) returns -1, then a < b;
 if cmp(a, b) returns  1, then a > b;
 if cmp(a, b) returns  0, then a == b.
 '''
 
 import random
+
 
 def cmp_standard(a, b):
     '''
@@ -56,7 +58,7 @@ def cmp_last_digit(a, b):
     return cmp_standard(a % 10, b % 10)
 
 
-def _merged(xs, ys, cmp=cmp_standard):
+def _merged(xs, ys, cmp = cmp_standard):
     '''
     Assumes that both xs and ys are sorted,
     and returns a new list containing the elements of both xs and ys.
@@ -64,22 +66,34 @@ def _merged(xs, ys, cmp=cmp_standard):
 
     NOTE:
     In python, helper functions are frequently prepended with the _.
-    This is a signal to users of a library that these functions are for "internal use only",
+    This is a signal to users of a library that
+    these functions are for "internal use only",
     and not part of the "public interface".
 
-    This _merged function could be implemented as a local function within the merge_sorted scope rather than a global function.
-    The downside of this is that the function can then not be tested on its own.
-    Typically, you should only implement a function as a local function if it cannot function on its own
+    This _merged function could be implemented as a local
+    function within the merge_sorted scope rather than a global function.
+    The downside of this is that the function can then not be tested on its own
+    Typically, you should only implement a function as a
+    local function if it cannot function on its own
     (like the go functions from binary search).
     If it's possible to make a function stand-alone,
-    then you probably should do that and write test cases for the stand-alone function.
+    then you probably should do that and write test cases
+    for the stand-alone function.
 
     >>> _merged([1, 3, 5], [2, 4, 6])
     [1, 2, 3, 4, 5, 6]
     '''
+    if cmp(xs[0], ys[0]) == -1:
+        if len(xs) <= 1:
+            return [xs[0]] + ys
+        return [xs[0]] + _merged(xs[1:], ys)
+    if cmp(xs[0], ys[0]) == 1:
+        if len(ys) <= 1:
+            return [ys[0]] + xs
+        return [ys[0]] + _merged(xs, ys[1:])
 
 
-def merge_sorted(xs, cmp=cmp_standard):
+def merge_sorted(xs, cmp = cmp_standard):
     '''
     Merge sort is the standard O(n log n) sorting algorithm.
     Recall that the merge sort pseudo code is:
@@ -95,15 +109,23 @@ def merge_sorted(xs, cmp=cmp_standard):
     You should return a sorted version of the input list xs.
     You should not modify the input list xs in any way.
     '''
+    if len(xs) <= 1:
+        return xs
+    else:
+        left = xs[:len(xs)//2]
+        right = xs[len(xs)//2:]
+        sort = _merged(left, right, cmp = cmp_standard)
+    return sort
 
 
-def quick_sorted(xs, cmp=cmp_standard):
+def quick_sorted(xs, cmp = cmp_standard):
     '''
     Quicksort is like mergesort,
     but it uses a different strategy to split the list.
     Instead of splitting the list down the middle,
-    a "pivot" value is randomly selected, 
-    and the list is split into a "less than" sublist and a "greater than" sublist.
+    a "pivot" value is randomly selected,
+    and the list is split into a "less than"
+    sublist and a "greater than" sublist.
 
     The pseudocode is:
 
@@ -120,24 +142,49 @@ def quick_sorted(xs, cmp=cmp_standard):
     You should return a sorted version of the input list xs.
     You should not modify the input list xs in any way.
     '''
+    less_than = []
+    greater_than = []
+    equal_to = []
+
+    if len(xs) <= 1:
+        return xs
+    else:
+        p = random.choice(xs)
+        for i in xs:
+            if i < p:
+                less_than.append(i)
+            elif i > p:
+                great_than.append(i)
+            elif i == p:
+                equal_to.append(i)
+        sort_less = merge_sorted(less_than)
+        sort_great = merge_sorted(greater_than)
+
+    return sort_less + equal_to + sort_great
 
 
-def quick_sort(xs, cmp=cmp_standard):
+def quick_sort(xs, cmp = cmp_standard):
     '''
     EXTRA CREDIT:
     The main advantage of quick_sort is that it can be implemented "in-place".
     This means that no extra lists are allocated,
     or that the algorithm uses Theta(1) additional memory.
-    Merge sort, on the other hand, must allocate intermediate lists for the merge step,
+    Merge sort, on the other hand, must allocate intermediate lists
+    for the merge step,
     and has a Theta(n) memory requirement.
-    Even though quick sort and merge sort both have the same Theta(n log n) runtime,
-    this more efficient memory usage typically makes quick sort faster in practice.
+    Even though quick sort and merge sort both have
+    the same Theta(n log n) runtime,
+    this more efficient memory usage typically makes quick sort
+    faster in practice.
     (We say quick sort has a lower "constant factor" in its runtime.)
-    The downside of implementing quick sort in this way is that it will no longer be a [stable sort](https://en.wikipedia.org/wiki/Sorting_algorithm#Stability),
+    The downside of implementing quick sort in this way is that it will no
+    longer be a [stable sort]
+    (https://en.wikipedia.org/wiki/Sorting_algorithm#Stability),
     but this is typically inconsequential.
 
     Follow the pseudocode of the Lomuto partition scheme given on wikipedia
     (https://en.wikipedia.org/wiki/Quicksort#Algorithm)
     to implement quick_sort as an in-place algorithm.
-    You should directly modify the input xs variable instead of returning a copy of the list.
+    You should directly modify the input xs variable instead of
+    returning a copy of the list.
     '''
