@@ -58,7 +58,7 @@ def cmp_last_digit(a, b):
     return cmp_standard(a % 10, b % 10)
 
 
-def _merged(xs, ys, cmp = cmp_standard):
+def _merged(xs, ys, cmp=cmp_standard):
     '''
     Assumes that both xs and ys are sorted,
     and returns a new list containing the elements of both xs and ys.
@@ -83,17 +83,39 @@ def _merged(xs, ys, cmp = cmp_standard):
     >>> _merged([1, 3, 5], [2, 4, 6])
     [1, 2, 3, 4, 5, 6]
     '''
-    if cmp(xs[0], ys[0]) == -1:
-        if len(xs) <= 1:
-            return [xs[0]] + ys
-        return [xs[0]] + _merged(xs[1:], ys)
-    if cmp(xs[0], ys[0]) == 1:
-        if len(ys) <= 1:
-            return [ys[0]] + xs
-        return [ys[0]] + _merged(xs, ys[1:])
+    xsi = 0
+    ysi = 0
+    merge = []
+
+    if len(xs) == 0:
+        return ys
+    if len(ys) == 0:
+        return xs
+
+    while xsi <= len(xs) - 1 and ysi <= len(ys) - 1:
+        comp = cmp(xs[xsi], ys[ysi])
+        if comp == -1:
+            merge.append(xs[xsi])
+            xsi += 1
+        if comp == 1:
+            merge.append(ys[ysi])
+            ysi += 1
+        if comp == 0:
+            merge.append(xs[xsi])
+            xsi += 1
+            merge.append(ys[ysi])
+            ysi += 1
+
+    while xsi <= len(xs) - 1:
+        merge.append(xs[xsi])
+        xsi += 1
+    while ysi <= len(ys) - 1:
+        merge.append(ys[ysi])
+        ysi += 1
+    return merge
 
 
-def merge_sorted(xs, cmp = cmp_standard):
+def merge_sorted(xs, cmp=cmp_standard):
     '''
     Merge sort is the standard O(n log n) sorting algorithm.
     Recall that the merge sort pseudo code is:
@@ -114,11 +136,13 @@ def merge_sorted(xs, cmp = cmp_standard):
     else:
         left = xs[:len(xs)//2]
         right = xs[len(xs)//2:]
-        sort = _merged(left, right, cmp = cmp_standard)
+        left_sort = merge_sorted(left, cmp)
+        right_sort = merge_sorted(right, cmp)
+        sort = _merged(left_sort, right_sort, cmp)
     return sort
 
 
-def quick_sorted(xs, cmp = cmp_standard):
+def quick_sorted(xs, cmp=cmp_standard):
     '''
     Quicksort is like mergesort,
     but it uses a different strategy to split the list.
@@ -150,20 +174,21 @@ def quick_sorted(xs, cmp = cmp_standard):
         return xs
     else:
         p = random.choice(xs)
-        for i in xs:
-            if i < p:
-                less_than.append(i)
-            elif i > p:
-                great_than.append(i)
-            elif i == p:
-                equal_to.append(i)
-        sort_less = merge_sorted(less_than)
-        sort_great = merge_sorted(greater_than)
+        for i in range(len(xs)):
+            comp = cmp(xs[i], p)
+            if comp == -1:
+                less_than.append(xs[i])
+            elif comp == 1:
+                greater_than.append(xs[i])
+            elif comp == 0:
+                equal_to.append(xs[i])
+        sort_less = quick_sorted(less_than, cmp)
+        sort_great = quick_sorted(greater_than, cmp)
 
     return sort_less + equal_to + sort_great
 
 
-def quick_sort(xs, cmp = cmp_standard):
+def quick_sort(xs, cmp=cmp_standard):
     '''
     EXTRA CREDIT:
     The main advantage of quick_sort is that it can be implemented "in-place".
